@@ -1,2 +1,0 @@
-# WonderfulQuotes
-Created with CodeSandbox
