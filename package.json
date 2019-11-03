@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "buefy": "latest",
+    "less-loader": "5.0.0",
     "vue": "^2.5.22"
   },
   "devDependencies": {

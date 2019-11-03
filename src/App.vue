@@ -6,14 +6,14 @@
         <app-progress :count="quotes.length" :maxQuotes="maxQuotes"></app-progress>
         <app-add-quote @input-quote="addQuote"></app-add-quote>
         <div class="section">
-          <div class="columns is-multiline">
+          <transition-group name="frame" appear tag="div" class="columns is-multiline">
             <app-frame
               v-for="quote in quotes"
               :key="quote.id"
               :quoteId="quote.id"
               @remove-quote="removeFrame"
             >{{ quote.text }}</app-frame>
-          </div>
+          </transition-group>
         </div>
       </div>
     </div>
@@ -76,3 +76,24 @@ export default {
   }
 };
 </script>
+
+<style lang="less" scoped>
+.frame {
+  &-enter {
+    opacity: 0;
+  }
+  &-enter-active,
+  &-leave-active {
+    transition-duration: 1s;
+    transition-property: opacity;
+  }
+  &-leave-active {
+    opacity: 0;
+    position: absolute;
+  }
+  &-move {
+    transition: transform 1s;
+  }
+}
+</style>
+
