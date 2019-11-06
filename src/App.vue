@@ -6,12 +6,11 @@
         <app-progress :count="quotes.length" :maxQuotes="maxQuotes"></app-progress>
         <app-add-quote @input-quote="addQuote"></app-add-quote>
         <div class="section">
-          <transition-group name="frame" appear tag="div" class="columns is-multiline">
+          <transition-group name="frame" tag="div" class="columns is-multiline" appear>
             <app-frame
-              v-for="quote in quotes"
+              v-for="(quote, index) in quotes"
               :key="quote.id"
-              :quoteId="quote.id"
-              @remove-quote="removeFrame"
+              @remove-quote="removeFrame(index, quote.id)"
             >{{ quote.text }}</app-frame>
           </transition-group>
         </div>
@@ -28,21 +27,19 @@ import Frame from "./components/Frame";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
+const bulmaNotify = function(vue, msg) {
+  vue.$buefy.notification.open({
+    message: msg,
+    type: "is-danger",
+    hasIcon: true,
+    indefinite: true
+  });
+};
+
 export default {
   data() {
     return {
-      quotes: [
-        {
-          id: 0,
-          text:
-            "Adapt what is useful, reject what is useless, and add what is specifically your own."
-        },
-        {
-          id: 1,
-          text:
-            "Knowing is not enough, we must apply. Willing is not enough, we must do."
-        }
-      ],
+      quotes: [],
       maxQuotes: 10
     };
   },
@@ -63,16 +60,40 @@ export default {
         return;
       }
 
-      let id = 0;
-      if (this.quotes.length > 0) {
-        id = this.quotes[this.quotes.length - 1].id + 1;
-      }
-      this.quotes.push({ id, text });
+      this.$http
+        .post("/quotes.json", [text])
+        .then(resp => {
+          const data = resp.data;
+          this.quotes.push({
+            id: data.name,
+            text: text
+          });
+        })
+        .catch(err => bulmaNotify(this, err + " > Unable to add quote"));
     },
-    removeFrame(id) {
-      const index = this.quotes.findIndex(quote => quote.id === id);
-      this.quotes.splice(index, 1);
+    removeFrame(quoteIdx, quoteKey) {
+      this.quotes.splice(quoteIdx, 1);
+      this.$http
+        .delete(`/quotes/${quoteKey}.json`)
+        .then(() => {
+          this.$buefy.notification.open("Quote Removed");
+        })
+        .catch(err => bulmaNotify(this, err + " > Unable to remove quote"));
     }
+  },
+  created() {
+    this.$http
+      .get("/quotes.json")
+      .then(resp => {
+        const data = resp.data;
+        for (let key in data) {
+          this.quotes.push({
+            id: key,
+            text: data[key]["0"]
+          });
+        }
+      })
+      .catch(err => bulmaNotify(this, err + " > Unable to retrieve quotes"));
   }
 };
 </script>
@@ -88,12 +109,13 @@ export default {
     transition-property: opacity;
   }
   &-leave-active {
-    opacity: 0;
     position: absolute;
+  }
+  &-leave-to {
+    opacity: 0;
   }
   &-move {
     transition: transform 1s;
   }
 }
 </style>
-

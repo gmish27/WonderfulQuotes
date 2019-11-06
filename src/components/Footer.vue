@@ -1,8 +1,8 @@
 <template>
   <footer class="footer">
     <div class="content has-text-centered">
-      <p>Made with
-        <strong>Buefy!</strong>
+      <p>
+        <strong>Info:</strong> Click on a card to delete it.
       </p>
     </div>
   </footer>
